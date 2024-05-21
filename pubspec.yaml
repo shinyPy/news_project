@@ -1,0 +1,42 @@
+name: news_project
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.4.0-282.2.beta <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+  cached_network_image: ^3.3.1
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  hexcolor: ^3.0.1
+  flutter_svg: ^2.0.10+1
+  flutter_svg_provider: ^1.0.7
+  responsive_framework: ^0.2.0
+  form_validator: ^2.1.1
+  provider: ^6.1.2
+  sqflite: ^2.3.3+1
+  google_fonts: ^6.2.1
+  image_picker: ^1.1.1
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/intro1.jpg
+    - assets/images/intro2.png
+    - assets/images/google.svg
+    - assets/images/facebook.svg
+    - assets/images/twitter.svg
+    - assets/images/logo.png
+    - assets/images/icon1.png
+
+    - assets/images/intro3.png
