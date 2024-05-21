@@ -1,7 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api, use_build_context_synchronously
-
 import 'package:flutter/material.dart';
-import 'package:news_project/components/comments.widget.dart';
+import 'package:news_project/screen/NewsDetailScreen.dart';
 import 'package:news_project/utils/database_helper.dart';
 
 class NewsWidget extends StatefulWidget {
@@ -12,7 +11,6 @@ class NewsWidget extends StatefulWidget {
 class _NewsWidgetState extends State<NewsWidget> {
   final dbHelper = DatabaseHelper();
   List<Map<String, dynamic>> _articles = [];
-
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
@@ -43,14 +41,12 @@ class _NewsWidgetState extends State<NewsWidget> {
       );
       return;
     }
-
     Map<String, dynamic> newArticle = {
       'Title': _titleController.text,
       'Content': _contentController.text,
       'ImageUrl': _imageUrlController.text,
       'AuthorID': 1,
     };
-
     try {
       await dbHelper.insertNewsArticle(newArticle);
       _fetchArticles();
@@ -175,24 +171,18 @@ class _NewsWidgetState extends State<NewsWidget> {
                   margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                   child: ListTile(
                     title: Text(article['Title']),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(article['Content']),
-                        if (article['ImageUrl'] != null)
-                          Image.network(
-                            article['ImageUrl'],
-                            errorBuilder: (context, error, stackTrace) {
-                              return Text('Image failed to load');
-                            },
-                          ),
-                        CommentsWidget(articleId: article['ArticleID']),
-                      ],
-                    ),
+                    subtitle: Text(article['Content']),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete),
                       onPressed: () => _deleteArticle(article['ArticleID']),
                     ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => NewsDetailScreen(article: article),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
@@ -205,3 +195,4 @@ class _NewsWidgetState extends State<NewsWidget> {
     );
   }
 }
+

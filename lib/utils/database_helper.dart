@@ -69,6 +69,7 @@ class DatabaseHelper {
       CREATE TABLE Users (
         UserID INTEGER PRIMARY KEY AUTOINCREMENT,
         Username TEXT NOT NULL UNIQUE,
+        Role TEXT NOT NULL DEFAULT 'user' CHECK (Role IN ('user', 'admin')),
         Email TEXT NOT NULL UNIQUE,
         PasswordHash TEXT NOT NULL,
         CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
