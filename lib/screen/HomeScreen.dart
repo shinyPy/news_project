@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:news_project/navbar.contents/home.contents.dart';
+import 'package:provider/provider.dart';
+import 'package:news_project/utils/app_providers.dart';
+import 'package:news_project/screen/AuthScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -38,9 +41,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _logout(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.logout();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => AuthScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text('Appbar'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: () => _logout(context),
+          ),
+        ],
+      ),
       body: _getBody(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -58,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
+        selectedItemColor: Colors.red[800],
         onTap: _onItemTapped,
       ),
     );

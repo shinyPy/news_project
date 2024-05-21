@@ -1,3 +1,5 @@
+// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:news_project/utils/database_helper.dart';
 
@@ -29,7 +31,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
 
   void _addComment() async {
     if (_commentController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Comment cannot be empty'),
       ));
       return;
@@ -58,7 +60,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
           decoration: InputDecoration(
             labelText: 'Add a comment',
             suffixIcon: IconButton(
-              icon: Icon(Icons.send),
+              icon: const Icon(Icons.send),
               onPressed: _addComment,
             ),
           ),

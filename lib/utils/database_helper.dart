@@ -1,5 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -77,6 +79,24 @@ class DatabaseHelper {
   // Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
   //   // Add migration logic if necessary
   // }
+  Future<int> insertUser(Map<String, dynamic> user) async {
+    Database db = await database;
+    return await db.insert('Users', user);
+  }
+
+  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'Users',
+      where: 'Email = ?',
+      whereArgs: [email],
+    );
+    if (result.isNotEmpty) {
+      return result.first;
+    } else {
+      return null;
+    }
+  }
 
   Future<int> insertBookmark(Map<String, dynamic> bookmark) async {
     Database db = await database;
@@ -210,5 +230,38 @@ class DatabaseHelper {
       where: 'UserID = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<int> registerUser(
+      String username, String email, String password) async {
+    Database db = await database;
+    String passwordHash = _generatePasswordHash(password);
+    Map<String, dynamic> user = {
+      'Username': username,
+      'Email': email,
+      'PasswordHash': passwordHash,
+    };
+    return await db.insert('Users', user);
+  }
+
+  Future<Map<String, dynamic>?> loginUser(String email, String password) async {
+    Database db = await database;
+    String passwordHash = _generatePasswordHash(password);
+    List<Map<String, dynamic>> result = await db.query(
+      'Users',
+      where: 'Email = ? AND PasswordHash = ?',
+      whereArgs: [email, passwordHash],
+    );
+    if (result.isNotEmpty) {
+      return result.first;
+    } else {
+      return null;
+    }
+  }
+
+  String _generatePasswordHash(String password) {
+    var bytes = utf8.encode(password);
+    var digest = sha256.convert(bytes);
+    return digest.toString();
   }
 }

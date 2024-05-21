@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:news_project/screen/LoginScreen.dart';
+import 'package:news_project/screen/AuthScreen.dart';
+import 'package:news_project/screen/HomeScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class IntroductionScreen extends StatefulWidget {
   @override
@@ -27,6 +29,24 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
       'subtitle': 'This is the third intro screen',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    if (isLoggedIn) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +154,7 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
                             curve: Curves.easeInOut,
                           );
                         } else {
-                          Navigator.push(context, _createRoute());
+                          Navigator.pushReplacement(context, _createRoute());
                         }
                       },
                       child: Text(_currentPage == _introData.length - 1
@@ -151,23 +171,24 @@ class _IntroductionScreenState extends State<IntroductionScreen> {
       ),
     );
   }
-}
 
-Route _createRoute() {
-  return PageRouteBuilder(
-    pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      var begin = Offset(0.0, 1.0);
-      var end = Offset.zero;
-      var curve = Curves.ease;
+  Route _createRoute() {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => AuthScreen(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        var begin = Offset(0.0, 1.0);
+        var end = Offset.zero;
+        var curve = Curves.ease;
 
-      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-      return SlideTransition(
-        position: animation.drive(tween),
-        child: child,
-      );
-    },
-    transitionDuration: Duration(milliseconds: 600), // Durasi transisi 600ms
-  );
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+      transitionDuration: Duration(milliseconds: 800), // Durasi transisi 600ms
+    );
+  }
 }

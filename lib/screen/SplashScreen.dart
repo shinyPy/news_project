@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_project/screen/IntroductionScreen.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -16,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 4),
       vsync: this,
     );
 
@@ -66,6 +67,14 @@ class _SplashScreenState extends State<SplashScreen>
                   width: 100, // Adjust the width as needed
                 ), // Your logo here
                 Text('SKATEL NEWS', style: TextStyle(fontSize: 24.0)),
+                const SizedBox(
+                  height: 50,
+                ),
+                LoadingAnimationWidget.flickr(
+                  leftDotColor: const Color(0xFF1A1A3F),
+                  rightDotColor: const Color(0xFFEA3799),
+                  size: 35,
+                ),
               ],
             ),
           ),

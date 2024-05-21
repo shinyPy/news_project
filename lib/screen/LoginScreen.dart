@@ -4,40 +4,32 @@ import 'package:news_project/components/text.form.global.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:news_project/components/button.global.dart';
 import 'package:news_project/screen/HomeScreen.dart';
-import 'package:news_project/utils/auth_service.dart';
+import 'package:news_project/utils/app_providers.dart';
 import 'package:news_project/utils/global.colors.dart';
 
 class LoginScreen extends StatelessWidget {
   LoginScreen({super.key});
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final AuthService authService =
-      AuthService(); // Create an instance of your authentication service
+  final AuthService _authService = AuthService();
+
+  void _signIn(BuildContext context) async {
+    final email = emailController.text;
+    final password = passwordController.text;
+
+    final success = await _authService.signIn(email, password);
+
+    if (success) {
+      Navigator.pushReplacement(context, _createRoute());
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Authentication failed. Please try again.'),
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    void _login() async {
-      String email = emailController.text.trim();
-      String password = passwordController.text.trim();
-
-      if (email.isNotEmpty && password.isNotEmpty) {
-        bool success = await authService.signIn(email, password);
-        if (success) {
-          Navigator.push(context, _createRoute());
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Invalid email or password'),
-            backgroundColor: Colors.red,
-          ));
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Please enter email and password'),
-          backgroundColor: Colors.red,
-        ));
-      }
-    }
-
     return Scaffold(
       body: SingleChildScrollView(
         child: SafeArea(
@@ -75,7 +67,6 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(
                       height: 15,
                     ),
-                    //// Email Input
                     TextFormGlobal(
                       controller: emailController,
                       text: 'Email',
@@ -85,7 +76,6 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(
                       height: 15,
                     ),
-                    //// Password Input
                     TextFormGlobal(
                         controller: passwordController,
                         text: 'Password',
@@ -97,7 +87,7 @@ class LoginScreen extends StatelessWidget {
                 ButtonGlobal(
                   color: GlobalColors.secondaryColor,
                   text: 'Sign in',
-                  onTap: _login, // Call _login function on button tap
+                  onTap: () => _signIn(context),
                 ),
                 const SizedBox(height: 25),
                 SocialLogin(),
@@ -106,16 +96,6 @@ class LoginScreen extends StatelessWidget {
           ),
         ),
       ),
-      // bottomNavigationBar: Container(
-      //   height: 50,
-      //   color: Colors.white,
-      //   alignment: Alignment.center,
-      //   child: Row(
-      //     children: [
-      //       Text('Test'),
-      //     ],
-      //   ),
-      // ),
     );
   }
 }
@@ -135,6 +115,7 @@ Route _createRoute() {
         child: child,
       );
     },
-    transitionDuration: Duration(milliseconds: 600), // Durasi transisi 600ms
+    transitionDuration:
+        Duration(milliseconds: 600), // Duration of the transition
   );
 }

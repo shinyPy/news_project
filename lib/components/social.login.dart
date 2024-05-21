@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages, sized_box_for_whitespace
+
 import "package:flutter/material.dart";
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 
