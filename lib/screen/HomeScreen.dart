@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:news_project/navbar.contents/home.contents.dart';
+import 'package:news_project/navbar.contents/profile.contents.dart';
 import 'package:provider/provider.dart';
 import 'package:news_project/utils/app_providers.dart';
 import 'package:news_project/screen/AuthScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,6 +13,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  String _username = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString('Username') ?? 'User';
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -30,12 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       case 2:
-        return Center(
-          child: Text(
-            'Profile Page',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-          ),
-        );
+        return ProfileContents();
       default:
         return Container();
     }
@@ -55,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Appbar'),
+        title: Text('Hello, $_username!'),
         actions: [
           IconButton(
             icon: Icon(Icons.logout),

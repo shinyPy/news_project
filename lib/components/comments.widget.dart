@@ -1,7 +1,6 @@
-// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:news_project/utils/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CommentsWidget extends StatefulWidget {
   final int articleId;
@@ -15,17 +14,29 @@ class _CommentsWidgetState extends State<CommentsWidget> {
   final dbHelper = DatabaseHelper();
   List<Map<String, dynamic>> _comments = [];
   final TextEditingController _commentController = TextEditingController();
+  int? _currentUserId;
+  String? _currentUserRole;
 
   @override
   void initState() {
     super.initState();
     _fetchComments();
+    _fetchCurrentUser();
   }
 
   Future<void> _fetchComments() async {
-    final comments = await dbHelper.getCommentsByArticleId(widget.articleId);
+    final comments =
+        await dbHelper.getCommentsByArticleIdWithUsernames(widget.articleId);
     setState(() {
       _comments = comments;
+    });
+  }
+
+  Future<void> _fetchCurrentUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _currentUserId = prefs.getInt('UserID');
+      _currentUserRole = prefs.getString('UserRole');
     });
   }
 
@@ -36,9 +47,15 @@ class _CommentsWidgetState extends State<CommentsWidget> {
       ));
       return;
     }
+    if (_currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('User not logged in'),
+      ));
+      return;
+    }
     Map<String, dynamic> newComment = {
       'ArticleID': widget.articleId,
-      'UserID': 1,
+      'UserID': _currentUserId,
       'CommentText': _commentController.text,
     };
     await dbHelper.insertComment(newComment);
@@ -51,30 +68,48 @@ class _CommentsWidgetState extends State<CommentsWidget> {
     _fetchComments();
   }
 
+  bool _canDeleteComment(Map<String, dynamic> comment) {
+    return _currentUserRole == 'admin' || _currentUserId == comment['UserID'];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
-          controller: _commentController,
-          decoration: InputDecoration(
-            labelText: 'Add a comment',
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.send),
-              onPressed: _addComment,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: TextField(
+            controller: _commentController,
+            decoration: InputDecoration(
+              labelText: 'Add a comment',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: _addComment,
+              ),
             ),
           ),
         ),
+        const SizedBox(height: 16),
         ListView.builder(
           shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
           itemCount: _comments.length,
           itemBuilder: (context, index) {
             final comment = _comments[index];
-            return ListTile(
-              title: Text(comment['CommentText']),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () => _deleteComment(comment['CommentID']),
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              child: ListTile(
+                title: Text(comment['CommentText']),
+                subtitle: Text('By ${comment['Username']}'),
+                trailing: _canDeleteComment(comment)
+                    ? IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _deleteComment(comment['CommentID']),
+                      )
+                    : null,
               ),
             );
           },

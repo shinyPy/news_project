@@ -30,6 +30,15 @@ class _AuthScreenState extends State<AuthScreen> {
     final email = emailController.text;
     final password = passwordController.text;
 
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please fill in all fields.'),
+        ),
+      );
+      return;
+    }
+
     final success = await authProvider.login(email, password);
 
     if (success) {
@@ -46,6 +55,15 @@ class _AuthScreenState extends State<AuthScreen> {
     final username = usernameController.text;
     final email = emailController.text;
     final password = passwordController.text;
+
+    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please fill in all fields.'),
+        ),
+      );
+      return;
+    }
 
     final success = await authProvider.register(username, email, password);
 

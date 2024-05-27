@@ -80,6 +80,7 @@ class DatabaseHelper {
   // Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
   //   // Add migration logic if necessary
   // }
+
   Future<int> insertUser(Map<String, dynamic> user) async {
     Database db = await database;
     return await db.insert('Users', user);
@@ -215,6 +216,11 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> deleteDatabase() async {
+    String path = join(await getDatabasesPath(), 'news.db');
+    await databaseFactory.deleteDatabase(path); // Correctly delete the database
+  }
+
   Future<int> deleteNewsArticle(int id) async {
     Database db = await database;
     return await db.delete(
@@ -233,16 +239,16 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> registerUser(
+  Future<void> registerUser(
       String username, String email, String password) async {
-    Database db = await database;
     String passwordHash = _generatePasswordHash(password);
-    Map<String, dynamic> user = {
+    final db = await database;
+    await db.insert('Users', {
       'Username': username,
+      'Role': 'admin', // or 'admin' if needed
       'Email': email,
       'PasswordHash': passwordHash,
-    };
-    return await db.insert('Users', user);
+    });
   }
 
   Future<Map<String, dynamic>?> loginUser(String email, String password) async {
@@ -265,4 +271,20 @@ class DatabaseHelper {
     var digest = sha256.convert(bytes);
     return digest.toString();
   }
+
+  Future<List<Map<String, dynamic>>> getCommentsByArticleIdWithUsernames(
+      int articleId) async {
+    Database db = await database;
+    return await db.rawQuery('''
+    SELECT Comments.CommentID, Comments.CommentText, Users.Username 
+    FROM Comments 
+    JOIN Users ON Comments.UserID = Users.UserID 
+    WHERE Comments.ArticleID = ? 
+    ORDER BY Comments.CreatedAt DESC
+  ''', [articleId]);
+  }
 }
+
+
+
+// Call this method to delete the existing database

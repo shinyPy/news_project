@@ -7,12 +7,24 @@ class AuthService {
 
   Future<bool> signIn(String email, String password) async {
     final user = await _dbHelper.loginUser(email, password);
-    return user != null;
+    if (user != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('UserID', user['UserID']);
+      await prefs.setString('Username', user['Username']); // Save username
+      await prefs.setString('Email', user['Email']); // Save username
+      await prefs.setString('UserRole', user['Role']); // Store the user role
+      await prefs.setBool('isLoggedIn', true);
+      return true;
+    }
+    return false;
   }
 
   Future<bool> register(String username, String email, String password) async {
     try {
       await _dbHelper.registerUser(username, email, password);
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          'Username', username); // Save username on registration
       return true;
     } catch (e) {
       return false;
@@ -39,8 +51,6 @@ class AuthProvider with ChangeNotifier {
   Future<bool> login(String email, String password) async {
     final success = await _authService.signIn(email, password);
     if (success) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
       _isLoggedIn = true;
       notifyListeners();
       return true;
@@ -50,15 +60,14 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> register(String username, String email, String password) async {
     final success = await _authService.register(username, email, password);
-    if (success) {
-      return true;
-    }
-    return false;
+    return success;
   }
 
   Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isLoggedIn', false);
+    await prefs.remove('UserID');
+    await prefs.remove('UserRole'); // Remove the user role
     _isLoggedIn = false;
     notifyListeners();
   }

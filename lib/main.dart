@@ -18,6 +18,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'News Project',
+      //     initialRoute: '/',
+      //     routes: {
+      //   '/': (context) => HomeScreen(),
+      //   '/profile': (context) => ProfileContents(),
+      //   '/bookmarks': (context) => BookmarksScreen(),
+      //   '/comments': (context) => CommentsScreen(),
+      //   '/settings': (context) => AccountSettingsScreen(),
+      //   '/login': (context) => LoginScreen(),
+      //   '/admin': (context) => AdminPanelScreen(),
+      // },
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

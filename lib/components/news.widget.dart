@@ -1,7 +1,9 @@
-// ignore_for_file: use_key_in_widget_constructors, library_private_types_in_public_api, use_build_context_synchronously
 import 'package:flutter/material.dart';
 import 'package:news_project/screen/NewsDetailScreen.dart';
 import 'package:news_project/utils/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class NewsWidget extends StatefulWidget {
   @override
@@ -13,12 +15,15 @@ class _NewsWidgetState extends State<NewsWidget> {
   List<Map<String, dynamic>> _articles = [];
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _imageUrlController = TextEditingController();
+  File? _imageFile;
+  String? _userRole;
+  int? _userId;
 
   @override
   void initState() {
     super.initState();
     _fetchArticles();
+    _getUserInfo();
   }
 
   Future<void> _fetchArticles() async {
@@ -34,25 +39,38 @@ class _NewsWidgetState extends State<NewsWidget> {
     }
   }
 
+  Future<void> _getUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userRole = prefs.getString('UserRole') ?? 'user';
+      _userId = prefs.getInt('UserID');
+    });
+  }
+
   Future<void> _addArticle() async {
-    if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
+    if (_titleController.text.isEmpty ||
+        _contentController.text.isEmpty ||
+        _imageFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Title and Content cannot be empty')),
+        const SnackBar(
+            content: Text('Title, Content and Image cannot be empty')),
       );
       return;
     }
     Map<String, dynamic> newArticle = {
       'Title': _titleController.text,
       'Content': _contentController.text,
-      'ImageUrl': _imageUrlController.text,
-      'AuthorID': 1,
+      'ImageUrl': _imageFile!.path,
+      'AuthorID': _userId,
     };
     try {
       await dbHelper.insertNewsArticle(newArticle);
       _fetchArticles();
       _titleController.clear();
       _contentController.clear();
-      _imageUrlController.clear();
+      setState(() {
+        _imageFile = null;
+      });
       Navigator.of(context).pop(); // Close the modal
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,6 +87,16 @@ class _NewsWidgetState extends State<NewsWidget> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error deleting article: $error')),
       );
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
     }
   }
 
@@ -129,14 +157,18 @@ class _NewsWidgetState extends State<NewsWidget> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _imageUrlController,
-                          decoration: const InputDecoration(
-                            labelText: 'Image URL',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.image),
-                          ),
+                        ElevatedButton(
+                          onPressed: _pickImage,
+                          child: Text('Pick Image'),
                         ),
+                        if (_imageFile != null) ...[
+                          const SizedBox(height: 16),
+                          Image.file(
+                            _imageFile!,
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        ],
                         const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: _addArticle,
@@ -170,16 +202,36 @@ class _NewsWidgetState extends State<NewsWidget> {
                 return Card(
                   margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                   child: ListTile(
+                    leading: article['ImageUrl'] != null &&
+                            article['ImageUrl'].isNotEmpty
+                        ? Image.file(
+                            File(article['ImageUrl']),
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.image, size: 50);
+                            },
+                          )
+                        : Icon(Icons.image, size: 50),
                     title: Text(article['Title']),
-                    subtitle: Text(article['Content']),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _deleteArticle(article['ArticleID']),
+                    subtitle: Text(
+                      article['Content'],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    trailing: _userRole == 'admin'
+                        ? IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () =>
+                                _deleteArticle(article['ArticleID']),
+                          )
+                        : null,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => NewsDetailScreen(article: article),
+                          builder: (context) =>
+                              NewsDetailScreen(article: article),
                         ),
                       );
                     },
@@ -187,12 +239,13 @@ class _NewsWidgetState extends State<NewsWidget> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        onPressed: _showAddArticleModal,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _userRole == 'admin'
+          ? FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: _showAddArticleModal,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }
-
