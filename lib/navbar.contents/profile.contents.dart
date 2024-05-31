@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:news_project/screen/Admin/ManageUsersScreen.dart';
 import 'package:news_project/screen/AdminPanelScreen.dart';
+import 'package:news_project/screen/AuthScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:news_project/utils/app_providers.dart';
+import 'package:provider/provider.dart';
 
 class ProfileContents extends StatelessWidget {
   const ProfileContents({super.key});
@@ -13,6 +15,15 @@ class ProfileContents extends StatelessWidget {
       'email': prefs.getString('Email') ?? 'unknown@example.com',
       'role': prefs.getString('UserRole') ?? 'user',
     };
+  }
+
+  void _logout(BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.logout();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => AuthScreen()),
+    );
   }
 
   @override
@@ -56,29 +67,19 @@ class ProfileContents extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 // if (userInfo['role'] == 'admin')
-                //   ElevatedButton.icon(
-                //     onPressed: () {
-                //       Navigator.of(context).pushNamed('/admin');
-                //     },
-                //     icon: const Icon(Icons.admin_panel_settings),
-                //     label: const Text('Admin Panel'),
-                //   ),
+
                 const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.bookmark),
-                  title: const Text('Bookmarks'),
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/bookmarks');
-                  },
-                ),
-                // ListTile(
-                //   leading: const Icon(Icons.comment),
-                //   title: const Text('My Comments'),
-                //   onTap: () {
-                //     Navigator.of(context).pushNamed('/comments');
-                //   },
+                // ElevatedButton.icon(
+                //   onPressed: () => _logout(context),
+                //   icon: const Icon(Icons.logout),
+                //   label: const Text('Logout '),
                 // ),
-                const Divider(),
+
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: const Text('Logout'),
+                  onTap: () => _logout(context),
+                ),
                 if (userInfo['role'] == 'admin')
                   ListTile(
                     leading: const Icon(Icons.admin_panel_settings),
@@ -87,23 +88,8 @@ class ProfileContents extends StatelessWidget {
                       Navigator.pushReplacement(context, _createRoute());
                     },
                   ),
-                ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: const Text('Logout'),
-                  onTap: () async {
-                    SharedPreferences prefs =
-                        await SharedPreferences.getInstance();
-                    await prefs.setBool('isLoggedIn', false);
-                    await prefs.remove('UserID');
-                    await prefs.remove('Username');
-                    await prefs.remove('Email');
-                    await prefs.remove('UserRole');
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/login',
-                      (Route<dynamic> route) => false,
-                    );
-                  },
-                ),
+
+                const Divider(),
               ],
             ),
           );

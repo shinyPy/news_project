@@ -101,19 +101,50 @@ class _CommentsWidgetState extends State<CommentsWidget> {
             final comment = _comments[index];
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8.0),
-              child: ListTile(
-                title: Text(comment['CommentText']),
-                subtitle: Text('By ${comment['Username']}'),
-                trailing: _canDeleteComment(comment)
-                    ? IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () => _deleteComment(comment['CommentID']),
-                      )
-                    : null,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.blueAccent,
+                    child: Text(
+                      comment['Username'][0].toUpperCase(),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                  title: Text(
+                    comment['Username'],
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 5),
+                      Text(
+                        comment['CommentText'],
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: _canDeleteComment(comment)
+                      ? IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteComment(comment['CommentID']),
+                        )
+                      : null,
+                ),
               ),
             );
           },
-        ),
+        )
       ],
     );
   }

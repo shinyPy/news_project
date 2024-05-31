@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news_project/navbar.contents/bookmark.contents.dart';
 import 'package:news_project/navbar.contents/home.contents.dart';
 import 'package:news_project/navbar.contents/profile.contents.dart';
 import 'package:provider/provider.dart';
@@ -39,12 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         return HomeContents();
       case 1:
-        return Center(
-          child: Text(
-            'Bookmark',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-          ),
-        );
+        return BookmarkContents();
       case 2:
         return ProfileContents();
       default:
@@ -52,27 +48,45 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _logout(BuildContext context) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => AuthScreen()),
-    );
-  }
+  // void _logout(BuildContext context) async {
+  //   final authProvider = Provider.of<AuthProvider>(context, listen: false);
+  //   await authProvider.logout();
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => AuthScreen()),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Hello, $_username!'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () => _logout(context),
-          ),
-        ],
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/icon1.png', // Your app logo
+              height: 52,
+              width: 52,
+              fit: BoxFit.contain,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Hello, $_username!',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        // actions: [
+        //   Tooltip(
+        //     message: 'Logout',
+        //     child: IconButton(
+        //       icon: Icon(Icons.logout),
+        //       onPressed: () => _logout(context),
+        //     ),
+        //   ),
+        //   SizedBox(width: 16), // Add some spacing between icon buttons
+        // ],
       ),
       body: _getBody(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(

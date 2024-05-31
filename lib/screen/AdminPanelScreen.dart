@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:news_project/screen/Admin/ManageNewsScreen.dart';
 import 'package:news_project/screen/Admin/ManageUsersScreen.dart';
 import 'package:news_project/screen/HomeScreen.dart';
 
@@ -40,7 +41,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             ExpansionPanel(
               headerBuilder: (BuildContext context, bool isExpanded) {
                 return ListTile(
-                  title: Text('Manage Users'),
+                  title: Text('CRUD management'),
                 );
               },
               body: Column(
@@ -52,6 +53,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => ManageUsersScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    title: Text('News Management'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ManageNewsScreen(),
                         ),
                       );
                     },

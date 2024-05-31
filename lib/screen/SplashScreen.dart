@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:news_project/screen/IntroductionScreen.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:news_project/screen/LoginScreen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (status == AnimationStatus.completed) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => IntroductionScreen()),
+          MaterialPageRoute(builder: (context) => LoginScreen()),
         );
       }
     });

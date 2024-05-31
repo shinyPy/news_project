@@ -29,6 +29,7 @@ dev_dependencies:
   image_picker: ^1.1.1
   shared_preferences: ^2.2.3
   loading_animation_widget: ^1.2.1
+  flutter_native_splash: ^2.4.0
 flutter:
   uses-material-design: true
 

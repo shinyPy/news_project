@@ -207,6 +207,26 @@ class DatabaseHelper {
     );
   }
 
+  Future<List<Map<String, dynamic>>> getBookmarkedArticles(int userId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'Bookmarks',
+      columns: ['ArticleID'],
+      where: 'UserID = ?',
+      whereArgs: [userId],
+    );
+    List<int> articleIds = maps.map((map) => map['ArticleID'] as int).toList();
+
+    if (articleIds.isEmpty) return [];
+
+    final articles = await db.query(
+      'NewsArticles',
+      where: 'ArticleID IN (${articleIds.join(', ')})',
+    );
+
+    return articles;
+  }
+
   Future<int> deleteComment(int id) async {
     Database db = await database;
     return await db.delete(
@@ -236,6 +256,25 @@ class DatabaseHelper {
       'Users',
       where: 'UserID = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<bool> isArticleBookmarked(int userId, int articleId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'Bookmarks',
+      where: 'UserID = ? AND ArticleID = ?',
+      whereArgs: [userId, articleId],
+    );
+    return result.isNotEmpty;
+  }
+
+  Future<int> removeBookmark(int userId, int articleId) async {
+    Database db = await database;
+    return await db.delete(
+      'Bookmarks',
+      where: 'UserID = ? AND ArticleID = ?',
+      whereArgs: [userId, articleId],
     );
   }
 
@@ -283,8 +322,27 @@ class DatabaseHelper {
     ORDER BY Comments.CreatedAt DESC
   ''', [articleId]);
   }
-}
 
+  // Read a single news article by ID
+  Future<Map<String, dynamic>?> getNewsArticleById(int id) async {
+    Database db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'NewsArticles',
+      where: 'ArticleID = ?',
+      whereArgs: [id],
+    );
+    if (results.isNotEmpty) {
+      return results.first;
+    }
+    return null;
+  }
+
+  // Read all news articles
+  Future<List<Map<String, dynamic>>> getAllNewsArticles() async {
+    Database db = await database;
+    return await db.query('NewsArticles');
+  }
+}
 
 
 // Call this method to delete the existing database
