@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:news_project/navbar.contents/bookmark.contents.dart';
 import 'package:news_project/navbar.contents/home.contents.dart';
 import 'package:news_project/navbar.contents/profile.contents.dart';
-import 'package:provider/provider.dart';
-import 'package:news_project/utils/app_providers.dart';
-import 'package:news_project/screen/AuthScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {

@@ -77,52 +77,31 @@ class DatabaseHelper {
     ''');
   }
 
-  // Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-  //   // Add migration logic if necessary
-  // }
-
+  //crud insert tabel user
   Future<int> insertUser(Map<String, dynamic> user) async {
     Database db = await database;
     return await db.insert('Users', user);
   }
 
-  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
-    Database db = await database;
-    List<Map<String, dynamic>> result = await db.query(
-      'Users',
-      where: 'Email = ?',
-      whereArgs: [email],
-    );
-    if (result.isNotEmpty) {
-      return result.first;
-    } else {
-      return null;
-    }
-  }
-
+  //buat insert bookmark
   Future<int> insertBookmark(Map<String, dynamic> bookmark) async {
     Database db = await database;
     return await db.insert('Bookmarks', bookmark);
   }
 
+  //buat insert comment
   Future<int> insertComment(Map<String, dynamic> comment) async {
     Database db = await database;
     return await db.insert('Comments', comment);
   }
 
+  //buat insert post news (articles)
   Future<int> insertNewsArticle(Map<String, dynamic> row) async {
     Database db = await database;
     return await db.insert('NewsArticles', row);
   }
 
-  Future<List<Map<String, dynamic>>> getCommentsByArticleId(
-      int articleId) async {
-    Database db = await database;
-    return await db
-        .query('Comments', where: 'ArticleID = ?', whereArgs: [articleId]);
-  }
-
-  // READ operations
+  // READ/fetch operations
   Future<List<Map<String, dynamic>>> getBookmarks() async {
     Database db = await database;
     return await db.query('Bookmarks');
@@ -141,19 +120,6 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getUsers() async {
     Database db = await database;
     return await db.query('Users');
-  }
-
-  Future<Map<String, dynamic>?> getUserById(int id) async {
-    Database db = await database;
-    List<Map<String, dynamic>> results = await db.query(
-      'Users',
-      where: 'UserID = ?',
-      whereArgs: [id],
-    );
-    if (results.isNotEmpty) {
-      return results.first;
-    }
-    return null;
   }
 
   // UPDATE operations
@@ -197,16 +163,62 @@ class DatabaseHelper {
     );
   }
 
-  // DELETE operations
-  Future<int> deleteBookmark(int id) async {
+  Future<int> deleteComment(int id) async {
     Database db = await database;
     return await db.delete(
-      'Bookmarks',
-      where: 'BookmarkID = ?',
+      'Comments',
+      where: 'CommentID = ?',
       whereArgs: [id],
     );
   }
 
+  //apus bookmark
+  Future<int> deleteBookmark(int userId, int articleId) async {
+    Database db = await database;
+    return await db.delete(
+      'Bookmarks',
+      where: 'UserID = ? AND ArticleID = ?',
+      whereArgs: [userId, articleId],
+    );
+  }
+
+  //scary (yes its delete the entire database)
+  Future<void> deleteDatabase() async {
+    String path = join(await getDatabasesPath(), 'news.db');
+    await databaseFactory.deleteDatabase(path);
+  }
+
+  //delete news
+  Future<int> deleteNewsArticle(int id) async {
+    Database db = await database;
+    return await db.delete(
+      'NewsArticles',
+      where: 'ArticleID = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> deleteUser(int id) async {
+    Database db = await database;
+    return await db.delete(
+      'Users',
+      where: 'UserID = ?',
+      whereArgs: [id],
+    );
+  }
+
+  //cek apakah user telah bookmark news article nya
+  Future<bool> isArticleBookmarked(int userId, int articleId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query(
+      'Bookmarks',
+      where: 'UserID = ? AND ArticleID = ?',
+      whereArgs: [userId, articleId],
+    );
+    return result.isNotEmpty;
+  }
+
+  //ambil news yang di bookmark oleh user saja.
   Future<List<Map<String, dynamic>>> getBookmarkedArticles(int userId) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -227,64 +239,13 @@ class DatabaseHelper {
     return articles;
   }
 
-  Future<int> deleteComment(int id) async {
-    Database db = await database;
-    return await db.delete(
-      'Comments',
-      where: 'CommentID = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<void> deleteDatabase() async {
-    String path = join(await getDatabasesPath(), 'news.db');
-    await databaseFactory.deleteDatabase(path); // Correctly delete the database
-  }
-
-  Future<int> deleteNewsArticle(int id) async {
-    Database db = await database;
-    return await db.delete(
-      'NewsArticles',
-      where: 'ArticleID = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<int> deleteUser(int id) async {
-    Database db = await database;
-    return await db.delete(
-      'Users',
-      where: 'UserID = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<bool> isArticleBookmarked(int userId, int articleId) async {
-    Database db = await database;
-    List<Map<String, dynamic>> result = await db.query(
-      'Bookmarks',
-      where: 'UserID = ? AND ArticleID = ?',
-      whereArgs: [userId, articleId],
-    );
-    return result.isNotEmpty;
-  }
-
-  Future<int> removeBookmark(int userId, int articleId) async {
-    Database db = await database;
-    return await db.delete(
-      'Bookmarks',
-      where: 'UserID = ? AND ArticleID = ?',
-      whereArgs: [userId, articleId],
-    );
-  }
-
   Future<void> registerUser(
       String username, String email, String password) async {
     String passwordHash = _generatePasswordHash(password);
     final db = await database;
     await db.insert('Users', {
       'Username': username,
-      'Role': 'admin', // or 'admin' if needed
+      'Role': 'admin',
       'Email': email,
       'PasswordHash': passwordHash,
     });
@@ -305,14 +266,15 @@ class DatabaseHelper {
     }
   }
 
+  //password hashing buat register
   String _generatePasswordHash(String password) {
     var bytes = utf8.encode(password);
     var digest = sha256.convert(bytes);
     return digest.toString();
   }
 
-  Future<List<Map<String, dynamic>>> getCommentsByArticleIdWithUsernames(
-      int articleId) async {
+  //ambil data komentar dan usernamenya
+  Future<List<Map<String, dynamic>>> getCommentsUsername(int articleId) async {
     Database db = await database;
     return await db.rawQuery('''
     SELECT Comments.CommentID, Comments.CommentText, Users.Username 
@@ -323,7 +285,6 @@ class DatabaseHelper {
   ''', [articleId]);
   }
 
-  // Read a single news article by ID
   Future<Map<String, dynamic>?> getNewsArticleById(int id) async {
     Database db = await database;
     List<Map<String, dynamic>> results = await db.query(
@@ -336,13 +297,4 @@ class DatabaseHelper {
     }
     return null;
   }
-
-  // Read all news articles
-  Future<List<Map<String, dynamic>>> getAllNewsArticles() async {
-    Database db = await database;
-    return await db.query('NewsArticles');
-  }
 }
-
-
-// Call this method to delete the existing database

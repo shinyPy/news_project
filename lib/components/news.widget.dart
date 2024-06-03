@@ -31,9 +31,9 @@ class _NewsWidgetState extends State<NewsWidget> {
       });
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching articles: $error')),
+        SnackBar(content: Text('Error fetch news: $error')),
       );
-    }
+    } //refresh ulang
   }
 
   Future<void> _getUserInfo() async {
@@ -47,14 +47,14 @@ class _NewsWidgetState extends State<NewsWidget> {
   Future<void> _toggleBookmark(int articleId) async {
     bool isBookmarked = await dbHelper.isArticleBookmarked(_userId!, articleId);
     if (isBookmarked) {
-      await dbHelper.removeBookmark(_userId!, articleId);
+      await dbHelper.deleteBookmark(_userId!, articleId);
     } else {
       await dbHelper.insertBookmark({
         'UserID': _userId,
         'ArticleID': articleId,
       });
     }
-    _fetchArticles(); // Refresh articles to reflect bookmark status
+    _fetchArticles();
   }
 
   @override

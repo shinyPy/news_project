@@ -25,8 +25,7 @@ class _CommentsWidgetState extends State<CommentsWidget> {
   }
 
   Future<void> _fetchComments() async {
-    final comments =
-        await dbHelper.getCommentsByArticleIdWithUsernames(widget.articleId);
+    final comments = await dbHelper.getCommentsUsername(widget.articleId);
     setState(() {
       _comments = comments;
     });
